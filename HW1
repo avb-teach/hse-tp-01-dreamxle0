@@ -1,0 +1,27 @@
+input_dir="$1"
+output_dir="$2"
+
+if [ -z "$input_dir" ] || [ -z "$output_dir" ]; then
+  echo "Usage: ./collect_files.sh input_dir output_dir"
+  exit 1
+fi
+
+mkdir -p "$output_dir"
+
+declare -A names
+
+find "$input_dir" -type f | while read file; do
+  name=$(basename "$file")
+  new_name="$name"
+
+  count=${names[$name]:-0}
+  while [ -e "$output_dir/$new_name" ]; do
+    count=$((count+1))
+    base="${name%.*}"
+    ext="${name##*.}"
+    new_name="${base}${count}.${ext}"
+  done
+
+  names[$name]=$count
+  cp "$file" "$output_dir/$new_name"
+done
